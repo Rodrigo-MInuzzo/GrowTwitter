@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id       String @id @default(uuid()) @db.Uuid
+  nome     String @db.VarChar(50)
+  email    String @unique @db.VarChar(50) 
+  username String @db.VarChar(50)
+  senha    String @db.VarChar(50)
+
+  token String?
+
+  tweets Tweet[] 
+  likes Like[]
+
+  dthrCriacao     DateTime @default(now()) @map("dthr_criacao")
+  dthrAtualizacao DateTime @updatedAt @map("dthr_atualizacao")
+  
+
+  @@map("usuario")
+}
+
+model Tweet {
+  id String  @default(uuid()) @db.Uuid @unique
+  idUsuario String   @map("id_usuario") @db.Uuid
+  conteudo  String  @db.VarChar(100)
+  tipo String @db.VarChar(1)
+  usuario Usuario @relation(fields: [idUsuario], references: [id])
+
+  likes Like[]
+
+  dthrCriacao     DateTime @default(now()) @map("dthr_criacao")
+  dthrAtualizacao DateTime @updatedAt @map("dthr_atualizacao")
+
+ @@id([id,idUsuario])
+  @@map("tweet")
+}
+
+model Like {
+
+   idUsuario String  @map("id_usuario") @db.Uuid
+   idTweet String  @map("id_tweet")  @db.Uuid
+
+   usuario Usuario @relation(fields: [idUsuario], references: [id])
+   tweet Tweet @relation(fields: [idTweet], references: [id])
+
+   @@id([idUsuario,idTweet])
+
+  @@map("like")
+}
+
+
+
+
