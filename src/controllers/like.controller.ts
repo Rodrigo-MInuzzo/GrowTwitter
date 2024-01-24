@@ -4,27 +4,41 @@ import { Like } from "../models/like.model";
 
 
 export class LikeController {
-    
+
     public async darLike(req: Request, res: Response) {
         try {
-            const { tweetId } = req.params;
-            const { userId } = req.body;
+            const { idTweet } = req.params;
+            const { idUsuario } = req.body;
 
-            if (!tweetId || !userId) {
+            if (!idTweet || !idUsuario) {
                 return res.status(401).send({
                     ok: false,
                     message: "As informações não foram informadas"
                 });
             }
 
+            const LikeExistente = await repository.like.findFirst({
+                where: {
+                    usuario: { id: idUsuario },
+                    tweet: { id: idTweet }
+                }
+            });
+
+            if (LikeExistente) {
+                return res.status(400).send({
+                    ok: false,
+                    message: "Usuário já deu like neste tweet"
+                });
+            }
+
             const tweet = await repository.tweet.findUnique({
                 where: {
-                    id: tweetId
+                    id: idTweet
                 }
             });
 
             if (!tweet) {
-                return res.status(401).send({
+                return res.status(404).send({
                     ok: false,
                     message: "Tweet não encontrado"
                 });
@@ -32,12 +46,12 @@ export class LikeController {
 
             const usuario = await repository.usuario.findUnique({
                 where: {
-                    id: userId
+                    id: idUsuario
                 }
             });
 
             if (!usuario) {
-                return res.status(401).send({
+                return res.status(404).send({
                     ok: false,
                     message: "Usuário não encontrado"
                 });
@@ -47,8 +61,8 @@ export class LikeController {
 
             const result = await repository.like.create({
                 data: {
-                    idUsuario: userId,
-                    idTweet: tweetId
+                    idUsuario: idUsuario,
+                    idTweet: idTweet
                 }
             });
 
@@ -66,4 +80,36 @@ export class LikeController {
         }
     }
 
+    public async dislike(req: Request, res: Response) {
+        try {
+            const { idTweet } = req.params;
+            const { idUsuario } = req.body;
+
+            if (!idTweet || !idUsuario) {
+                return res.status(401).send({
+                    ok: false,
+                    message: "As informações não foram informadas"
+                });
+            }
+
+            await repository.like.delete({
+                where: {
+                    idUsuario_idTweet: idUsuario,
+                    idTweet: idTweet
+                }
+            });
+
+            return res.status(200).send({
+                ok: true,
+                message: "Like removido com sucesso"
+            });
+
+        } catch (error: any) {
+            return res.status(500).send({
+                ok: false,
+                message: error.toString()
+            }
+            )
+        }
+    }
 }
