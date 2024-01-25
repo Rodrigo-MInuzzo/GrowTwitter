@@ -14,12 +14,14 @@ const tweetController= new TweetController();
 const likeController = new LikeController();
 
 
+
 app.post("/usuario", usuarioController.criarUsuario)
 app.post("/login", usuarioController.login)
 app.get("/buscarUsuario/:id", usuarioController.buscarUsuario)
 app.get("/listarUsuarios", usuarioController.listarUsuarios)
 app.post("/criarTweet/:id", tweetController.criarTweet)
 app.post("/darLike/:idTweet", likeController.darLike);
+app.get("/listarTweets", tweetController.listarTweets)
 
 
 

@@ -59,4 +59,22 @@ import { Tweet } from "../models/tweet.model";
        }
     }
 
+    public async listarTweets(req:Request, res:Response){
+         try {
+            const tweets = await repository.tweet.findMany();
+
+            res.status(200).send({
+              ok: true,
+              message: "Lista de tweets obtida com sucesso",
+              data: tweets,
+            });
+
+         } catch (error:any) {
+            return res. status(500).send({
+               ok: false,
+               message: error.toString()
+             })
+         }
+    }
+
  }
