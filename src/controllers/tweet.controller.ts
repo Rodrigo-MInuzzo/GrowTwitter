@@ -61,8 +61,17 @@ import { Tweet } from "../models/tweet.model";
 
     public async listarTweets(req:Request, res:Response){
          try {
-            const tweets = await repository.tweet.findMany();
-
+            const {id}= req.params;
+            const tweets = await repository.tweet.findMany({
+               where: {
+                  idUsuario:id 
+               },
+               select : {
+                  conteudo: true,
+                  tipo:true,
+                  usuario: true,
+               }
+           });
             res.status(200).send({
               ok: true,
               message: "Lista de tweets obtida com sucesso",
@@ -75,6 +84,32 @@ import { Tweet } from "../models/tweet.model";
                message: error.toString()
              })
          }
+    }
+
+    public async listarTodosTweets(req:Request, res:Response){
+       try {
+            const result = await repository.tweet.findMany({
+               select : {
+                  id: true,
+                  conteudo: true,
+                  tipo:true,
+                  usuario: true,
+               }
+            })
+            return res.status(200).send({
+               ok: true,
+               message: "Lista de tweets obtida com sucesso!",
+               data: result,
+            })
+         
+       } catch (error:any) {
+
+         return res.status(500).send({
+            ok: false,
+            message: error.toString()
+          })
+       }
+
     }
 
  }

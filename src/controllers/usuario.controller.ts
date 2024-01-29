@@ -3,22 +3,22 @@ import { Usuario } from "../models/usuario.model";
 import repository from "../database/prisma.repository";
 import { randomUUID } from "crypto";
 
-export class UsuarioController{
-    public async criarUsuario(req:Request, res:Response){
+export class UsuarioController {
+    public async criarUsuario(req: Request, res: Response) {
         try {
             //entrada
-            const {nome, email, senha,username}=req.body;
-             if(!nome || !email || !senha || !username){
+            const { nome, email, senha, username } = req.body;
+            if (!nome || !email || !senha || !username) {
                 return res.status(400).send({
                     ok: false,
                     message: "Algum campo está faltando!",
                 });
-             }
-              
-             const usuario= new Usuario(nome,email,username,senha);
+            }
+
+            const usuario = new Usuario(nome, email, username, senha);
             //processamento
-            
-            const result= await repository.usuario.create({
+
+            const result = await repository.usuario.create({
                 data: usuario,
             })
 
@@ -26,62 +26,63 @@ export class UsuarioController{
             return res.status(201).send({
                 ok: true,
                 message: "Usuário criado com sucesso",
-                data:result,
+                data: result,
             })
-            
-        } catch (error:any) {
+
+        } catch (error: any) {
             return res.status(500).send({
                 ok: false,
                 message: error.toString(),
             });
         }
     }
-  
-    public async login(req:Request, res:Response){
+
+    public async login(req: Request, res: Response) {
         try {
-              const {email,senha}=req.body;
+            const { email, senha } = req.body;
 
-              if(!email || !senha){
-                 return res.status(400).send({
+            if (!email || !senha) {
+                return res.status(400).send({
                     ok: false,
-                    message:"E-mail ou senha não informados"
-                 })
-              }
+                    message: "E-mail ou senha não informados"
+                })
+            }
 
-              const usuario= await repository.usuario.findUnique({
-                where:{
+            const usuario = await repository.usuario.findUnique({
+                where: {
                     email,
                     senha
-                }
-              })
-            
-              if(!usuario){
-                 return res.status(400).send({
+                }, select: { id: true, nome: true, username: true }
+            })
+
+            if (!usuario) {
+                return res.status(400).send({
                     ok: false,
-                    message:"Usuário não encontrado"
-                 })
-              }
+                    message: "Usuário não encontrado"
+                })
+            }
 
-              const token= randomUUID();
+            const token = randomUUID();
 
-              await repository.usuario.update({
-                where:{
+            await repository.usuario.update({
+                where: {
                     id: usuario.id
                 },
-                data:{
+                data: {
                     token
                 }
-              })
+            })
 
-              return res.status(200).send({
+            return res.status(200).send({
                 ok: true,
                 message: "Login feito com sucesso!",
-                data:{
+                data: {
                     token,
+                    id:usuario.id
                 }
-              });
+            });
 
-        } catch (error:any) {
+        } catch (error: any) {
             return res.status(500).send({
                 ok: false,
                 message: error.toString()
@@ -89,55 +90,55 @@ export class UsuarioController{
         }
     }
 
-    public async buscarUsuario(req:Request, res:Response){
-       try {
-          const{id}= req.params;
+    public async buscarUsuario(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
 
-          if(!id){
-            return res.status(400).send({
-                ok: false,
-                message: "Id não informado"
-            })
-          }
-
-          const usuario= await repository.usuario.findUnique({
-            where: {
-                id,
+            if (!id) {
+                return res.status(400).send({
+                    ok: false,
+                    message: "Id não informado"
+                })
             }
-          })
-        
-          if(!usuario){
-            return res.status(401).send({
-                ok: false,
-                message: "Usuário não encontrado"
+
+            const usuario = await repository.usuario.findUnique({
+                where: {
+                    id,
+                }
             })
-          }
 
-          return res.status(200).send({
-            ok: true,
-            message: "Usuário encontrado com sucesso",
-            data: usuario
-        
-          })
+            if (!usuario) {
+                return res.status(401).send({
+                    ok: false,
+                    message: "Usuário não encontrado"
+                })
+            }
 
-       } catch (error:any) {
-        return res.status(500).send({
-            ok:false,
-            message:error.toString()
-        })
-       }
+            return res.status(200).send({
+                ok: true,
+                message: "Usuário encontrado com sucesso",
+                data: usuario
+
+            })
+
+        } catch (error: any) {
+            return res.status(500).send({
+                ok: false,
+                message: error.toString()
+            })
+        }
     }
 
-    public async listarUsuarios(req:Request, res:Response){
+    public async listarUsuarios(req: Request, res: Response) {
         try {
-           return res.status(201).send(
-            await repository.usuario.findMany()
-           )
+            return res.status(201).send(
+                await repository.usuario.findMany()
+            )
 
-            
-        } catch (error:any) {
+
+        } catch (error: any) {
             return res.status(500).send({
-                ok:false,
+                ok: false,
                 message: error.toString()
             })
         }
